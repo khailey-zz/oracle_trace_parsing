@@ -22,10 +22,13 @@ Histogram of latencies  for:                  db file sequential read
      0   64u   .1m   .2m   .5m    1m    2m    4m    8m   16m   33m   65m  .1s .1s+
      0  29239  6676   972  8044   735  1177  5377 17642  6062   286    13  36
 ----------------------------------------------------------------------------
+
+----------------------------------------------------------------------------
 Histogram of latencies by I/O size in # of blocks for:
                                  db file scattered read
                                  direct path read
                                  direct path read temp
+----------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 db file scattered read
       0    64u   .1m   .2m   .5m    1m    2m    4m    8m   16m   33m   65m  .1s .1s+
@@ -33,10 +36,12 @@ db file scattered read
 
   2   0      2     3     0     0     0     0     0     0     4     0
 ----------------------------------------------------------------------------
+
+----------------------------------------------------------------------------
 Breakdown by SQL Statement
 ----------------------------------------------------------------------------
 
----------------------------
+----------------------------------------------------------------------------
 UPDATE TOTO.TRANSACTIONS T1 SET
       T1.YIELD_YTM = (SELECT NVL(T1.YIELD_YTM,NVL(T2."Reported_Yield",T1.YIELD_YTM))
     -------------------------------------------------------------
@@ -59,6 +64,7 @@ UPDATE TOTO.TRANSACTIONS T1 SET
                  'INDEX RANGE SCAN TRADE_ID_SOURCE_IDX (cr=1901 pr=340 pw=0
                'TABLE ACCESS BY INDEX ROWID LOT_TRANSACTIONS (cr=3240 pr=3008 pw=0
            'TABLE ACCESS FULL VATRADE_SUPPORT (cr=0 pr=0 pw=0 time=0 us cost=17 
+----------------------------------------------------------------------------
 
 The above output has 3 basic sections
 
@@ -82,13 +88,14 @@ There are basically 3 types of events in the Summary section
 2) The other wait events should account for roughly the same amount of time. The counts can be different and the events can be different, but if there is some event that takes up much more time in one trace than the other trace then that can point to some problem or configuration difference between the databases. For example if a lock shows up in one and not the other, then in one case there is a blocking session slowing down this trace, where as if the other trace has no locks then it was not blocked by another session. In this case there would be an application problem in one trace and not the other.
 3) The I/O events are the ones that are of most interest for Delphix since Delphix primarily impacts I/O. The number of I/Os should be the same between physical and virtual. If the counts are significantly higher on virtual then the reason for the high count should be investigated and corrected before delving farther into the Delphix stack.
 
-
 Comparing the count columns might look like
+----------------------------------------------------------------------------
                        physical| virtual      
 -------------------------------|--------
            event        count  |  count 
 db file sequential read  9451  |  76259  
 db file scattered read     17  |   7196 
+----------------------------------------------------------------------------
 
 Which would mean that the the virtual read more data than the physical thus there is something different on the virtual, other Delphix,  that should be addressed before looking into any issues because of Delphix.
 The rows to compare are I/O the possible I/O rows are:
