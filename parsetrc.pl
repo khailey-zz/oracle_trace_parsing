@@ -1,4 +1,59 @@
-cat $* | perl -e '
+#!/bin/bash
+
+usage()
+{
+cat << EOF
+   usage: $0 [options] trace_file
+
+   analyses trace files from Oracle created with 10046 event or with waits=true
+   
+OPTIONS:
+    -h       Show this message
+
+EXAMPLE
+   
+     $0  sid_ora_29908.trc
+
+EOF
+exit
+}
+
+argn=0
+while getopts hba:v OPTION
+do
+     case $OPTION in
+         h)
+             usage
+             ;;
+         a)
+             # not used yet
+             argn=$(expr $argn + 2 )
+             ARGVALUE=$OPTARG
+             ;;
+         v)
+             # not used yet
+             argn=$(expr $argn + 1 )
+             verbose=1
+             ;;
+         ?)
+             usage
+             ;;
+     esac
+done
+
+shift $argn
+[[ $# -lt 1 ]] && usage
+[[ $# -gt 1 ]] && usage
+
+file=$1
+if [ ! -f $file ]; then
+  echo "ERROR: "
+  echo "    file:$1, doesn't exist"
+  echo " "
+  usage
+fi
+
+cat $file | perl -e '
 
   # debugging, look at max read speeds that are too fast
   $fastread=-1;
@@ -257,12 +312,15 @@ sub print_hist {
           printf("curnum:%s: dep:%d: wait:%d: event:%s:\n",  $curnum,$dep{$curnum},  $cursum{$curnum}{$event},  $event) if defined($debug) ;
 	  ;
 
-          if ( $event ne "SQL*Net message from client" )  {
+          #WAIT #7014: nam=.SQL*Net message from client. ela= 72413 
+          if ( $event   ne "SQL*Net message from client" )  {
              $totalwaits+=$ela;
-            # $totalwaits{$curnum}+=$ela;
+           # $totalwaits{$curnum}+=$ela;
              $curwaits{$curnum}+=$ela;
+          } else {
+             #printf("event idle:%s, ela:%d, total:%d:\n", $event,$ela,$idle;
+            $idle+=$ela;
           }
-
 
           if ( $ela > 0 ) {
              $bucket=int(log($ela)/log(2)+1);
@@ -502,6 +560,7 @@ sub print_hist {
   printf("total wait  %10d\n", $totalwaits/(1000*1000) );
   printf("cpu         %10d\n",$sum{"CPU"}/(1000*1000) );
   printf("unaccounted %10d\n", ($sum{"ELAPSED"} - ( $totalwaits + $sum{"CPU"} ) )  /(1000*1000) );
+  printf("idle        %10d\n", $idle/(1000*1000) );
 
  printf("\n----------------------------------------------------------------------------\n");
  printf("                    Summary of Activity in trace file\n");
