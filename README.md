@@ -87,7 +87,6 @@ There are basically 3 types of events in the Summary section
 
 1. The CPU and Elapsed can vary for a number of reasons. Elapsed includes idle time, so if the session being traced was idle for different amounts of time then the two traces can have different Elapsed time. The CPU should be relatively the same if the boxes are the same type.
 2. The other wait events should account for roughly the same amount of time. The counts can be different and the events can be different, but if there is some event that takes up much more time in one trace than the other trace then that can point to some problem or configuration difference between the databases. For example if a lock shows up in one and not the other, then in one case there is a blocking session slowing down this trace, where as if the other trace has no locks then it was not blocked by another session. In this case there would be an application problem in one trace and not the other.
-3. The I/O events are the ones that are of most interest for Delphix since Delphix primarily impacts I/O. The number of I/Os should be the same between prodb and devops. If the counts are significantly higher on virtual then the reason for the high count should be investigated and corrected before delving farther into the Delphix stack.
 
 Comparing the count columns might look like
 ----------------------------------------------------------------------------
@@ -100,7 +99,7 @@ Comparing the count columns might look like
 
 ----------------------------------------------------------------------------
 
-Which would mean that the the devops read more data than the prodb thus there is something different on the virtual, other Delphix,  that should be addressed before looking into any issues because of Delphix.
+Which would mean that the the devops read more data than the prodb thus there is something different.  This difference should be addressed before looking into deeper.
 The rows to compare are I/O the possible I/O rows are:
 read I/O
 
