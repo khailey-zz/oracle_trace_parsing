@@ -99,8 +99,8 @@ Comparing the count columns might look like
 
 ----------------------------------------------------------------------------
 
-Which would mean that the the devops read more data than the prodb thus there is something different.  This difference should be addressed before looking into deeper.
-The rows to compare are I/O the possible I/O rows are:
+Which would mean that the devops read more data than the prodb thus there is something different.  This difference should be addressed before looking deeper into the issue.
+The rows to compare are I/O, and the possible I/O rows are:
 read I/O
 
         db file sequential read
@@ -121,21 +121,21 @@ The count for these events should be roughly the same. If the count is higher fo
            *  other queries have forced out the relevant data by  filling the buffer cache with data unrelated to this query
     3. has a different execution plan – see “ SQL execution plan”  below
 
-If the counts are roughly the same on prodb and devops but the the “avg ms”, ie the average time waited per event, is higher then look at the histogram of latency. See below
+If the counts are roughly the same on prodb and devops but the “avg ms”, ie the average time waited per event, is higher then look at the histogram of latency. See below
 write I/O
 
             direct path write
             direct path write temp
             log file sync
 
-The count for these events should be roughly the same. If the count is higher for then the devops is doing a different workload:
+The count for these events should be roughly the same. If the count is higher for one, then the devops is doing a different workload:
 
 direct path write – query is inserting more data
 direct path write temp – query is sorting more data or the memory the user is allowed to use for sorting is smaller
 log file sync – query/job is committing more.
 histogram of latency
 
-If the list of events and count of events are roughly the same  in “summary  of activity” section yet the read I/O events showed significantly more time on devops,  then histogram section will give more detail about these I/O read latency. The goal of the latency histogram is primarily to see if virtual and prodb were using the same amount of host file system cache. There is no general method currently of seeing which I/O came from file system cache or from SAN cache or actually from prodb disk, but given the limits of current hardware one can make some strong inferences from the the latency distribution. Latency under 64 microseconds is generally going to be coming from local file system cache. (on 4Gb FC it takes 20us just to transfer an 8K block not accounting for any code stack, scheduling or memory or disk access).
+If the list of events and count of events are roughly the same  in “summary  of activity” section yet the read I/O events showed significantly more time on devops,  then histogram section will give more detail about these I/O read latency. The goal of the latency histogram is primarily to see if virtual and prodb were using the same amount of host file system cache. There is no general method currently of seeing which I/O came from file system cache or from SAN cache or actually from prodb disk, but given the limits of current hardware one can make some strong inferences from the latency distribution. Latency under 64 microseconds is generally going to be coming from local file system cache. (on 4Gb FC it takes 20us just to transfer an 8K block not accounting for any code stack, scheduling or memory or disk access).
 
 Here is an example comparing prodb to devops for single block reads, which Oracle calls “db file sequential read”
 
